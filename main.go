@@ -29,6 +29,7 @@ func main() {
 	var recentTagRef *plumbing.Reference
 
 	err = tagRefs.ForEach(func(ref *plumbing.Reference) error {
+		fmt.Printf("Name: %s, h:%v, trg; %v\n", ref.Name(), ref.Hash().String(), ref.Target())
 		// if recentTagRef == nil || recentTagRef.Target().IsTag() .Hash().Before(ref.Target().Hash()) {
 		recentTagRef = ref
 		// }
@@ -40,10 +41,14 @@ func main() {
 	}
 	fmt.Println(recentTagRef.Name(), recentTagRef.Hash().String())
 
+	// if recentTagRef != nil {
+
+	t := time.Now().AddDate(-1, 0, 0)
 	// Get the commit history from the recent tag up to HEAD
 	commitIter, err := repo.Log(&git.LogOptions{
 		// From:  recentTagRef.Hash(),
 		Order: git.LogOrderCommitterTime,
+		Since: &t,
 	})
 	if err != nil {
 		log.Fatalf("Error getting commit history: %v", err)
@@ -92,6 +97,7 @@ func main() {
 	for au, cnt := range authors {
 		fmt.Printf("Author: %s, commits: %d, first: %v, last: %v\n", au, cnt.commits, cnt.first, cnt.last)
 	}
+	// }
 }
 
 type author struct {
