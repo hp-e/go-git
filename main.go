@@ -7,7 +7,6 @@ import (
 	"time"
 
 	git "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -22,38 +21,48 @@ func main() {
 	}
 
 	// Get the most recent tag reference
-	tagRefs, err := repo.Tags()
-	if err != nil {
-		log.Fatalf("Error getting tags: %s", err)
-	}
-	var recentTagRef *plumbing.Reference
+	// tagRefs, err := repo.Tags()
+	// if err != nil {
+	// 	log.Fatalf("Error getting tags: %s", err)
+	// }
+	// var recentTagRef *plumbing.Reference
 
-	err = tagRefs.ForEach(func(ref *plumbing.Reference) error {
-		fmt.Printf("Name: %s, h:%v, trg; %v\n", ref.Name(), ref.Hash().String(), ref.Target())
-		// if recentTagRef == nil || recentTagRef.Target().IsTag() .Hash().Before(ref.Target().Hash()) {
-		recentTagRef = ref
-		// }
+	// err = tagRefs.ForEach(func(ref *plumbing.Reference) error {
+	// 	// fmt.Printf("Name: %s, h:%v, trg; %v\n", ref.Name(), ref.Hash().String(), ref.Target())
+	// 	// if recentTagRef == nil || recentTagRef.Target().IsTag() .Hash().Before(ref.Target().Hash()) {
+	// 	recentTagRef = ref
+	// 	// }
+	// 	return nil
+	// })
+
+	// if err != nil {
+	// 	log.Fatalf("Error finding recent tag: %s", err)
+	// }
+	// fmt.Println(recentTagRef.Name(), recentTagRef.Hash().String())
+
+	var tag *object.Tag
+	// var tagDate *time.Time
+	tagos, _ := repo.TagObjects()
+	_ = tagos.ForEach(func(t *object.Tag) error {
+		// fmt.Println(t.Hash)
+		tag = t
+		// tagDate = &t.Tagger.When
 		return nil
 	})
-
-	if err != nil {
-		log.Fatalf("Error finding recent tag: %s", err)
-	}
-	fmt.Println(recentTagRef.Name(), recentTagRef.Hash().String())
-
 	// if recentTagRef != nil {
 
-	t := time.Now().AddDate(-1, 0, 0)
+	// t := time.Now().AddDate(-1, 0, 0)
 	// Get the commit history from the recent tag up to HEAD
 	commitIter, err := repo.Log(&git.LogOptions{
-		// From:  recentTagRef.Hash(),
+		// From:  tag.Hash,
 		Order: git.LogOrderCommitterTime,
-		Since: &t,
+		Since: &tag.Tagger.When,
 	})
 	if err != nil {
 		log.Fatalf("Error getting commit history: %v", err)
 	}
 
+	fmt.Printf("Commits since %v\n\n", tag.Tagger.When)
 	// Print the commit messages
 	var messages []string
 	authors := make(map[string]author)
